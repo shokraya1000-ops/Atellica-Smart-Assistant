@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atellica – باركودات دليل التدريب</title>
+<style>
+  :root { --navy:#1b2c4a; --teal:#1f7776; --line:#d5dbe6; --muted:#5f6b80; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Segoe UI",Tahoma,Arial,sans-serif; color:var(--navy); background:#f5f3ee; }
+  .toolbar { position:sticky; top:0; z-index:5; background:var(--navy); color:#fff; padding:12px 20px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .toolbar b { font-size:15px; }
+  .toolbar input { flex:1; min-width:260px; padding:7px 10px; border-radius:8px; border:0; font-size:13px; direction:ltr; }
+  .toolbar button { padding:8px 16px; border-radius:8px; border:0; background:#47b0ad; color:#fff; font-weight:700; cursor:pointer; font-size:14px; }
+  .warn { margin:14px 20px 0; padding:10px 14px; border-radius:10px; background:#fff4d6; border:1px solid #f0d58a; font-size:13px; display:none; }
+  .sheet { max-width:210mm; margin:16px auto 40px; background:#fff; padding:10mm; box-shadow:0 4px 24px rgba(20,33,58,.12); }
+  header.doc { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; border-bottom:3px solid var(--teal); padding-bottom:8px; margin-bottom:6px; }
+  header.doc h1 { font-size:17px; margin:0; }
+  header.doc p { margin:2px 0 0; font-size:11px; color:var(--muted); }
+  .notice { font-size:9.5px; color:#7a5a00; background:#fff8e6; border:1px solid #f0d58a; border-radius:6px; padding:4px 8px; margin:6px 0 10px; }
+  .module { margin-top:10px; }
+  .mhead { display:flex; align-items:center; gap:10px; background:var(--navy); color:#fff; border-radius:8px; padding:6px 10px; break-after:avoid; page-break-after:avoid; }
+  .mhead .t { flex:1; }
+  .mhead .t b { font-size:13px; } .mhead .t span { font-size:10.5px; opacity:.8; display:block; direction:ltr; text-align:right; }
+  .mhead .q { width:20mm; height:20mm; background:#fff; padding:1mm; border-radius:3px; }
+  .grid { direction:ltr; display:grid; grid-template-columns:repeat(4,1fr); gap:3mm; margin-top:3mm; }
+  .card { border:1px solid var(--line); border-radius:6px; padding:2.5mm; display:flex; flex-direction:column; align-items:center; text-align:center; break-inside:avoid; page-break-inside:avoid; }
+  .card .q { width:27mm; height:27mm; }
+  .card .ti { font-size:9px; font-weight:700; line-height:1.25; margin-top:1.5mm; direction:ltr; min-height:7mm; }
+  .card .pg { font-size:8px; color:var(--muted); margin-top:1mm; direction:ltr; }
+  .q svg { width:100%; height:100%; display:block; }
+  a.card, a.card:visited { color:inherit; text-decoration:none; }
+  @page { size:A4; margin:8mm; }
+  @media print {
+    body { background:#fff; }
+    .toolbar, .warn { display:none !important; }
+    .sheet { box-shadow:none; margin:0; padding:0; max-width:none; }
+    .module { break-inside:auto; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <b>ورقة الباركودات</b>
+  <label style="font-size:12px">رابط مجلد الملفات:</label>
+  <input id="base" aria-label="Base link">
+  <button onclick="render()">تحديث</button>
+  <button onclick="window.print()">🖨 طباعة</button>
+  <a href="index.html" style="color:#bfe7e5;font-size:13px">القائمة</a>
+</div>
+<div class="warn" id="warn">⚠️ هذه الصفحة مفتوحة من جهازك وليس من الرابط على الإنترنت. افتحها من رابط GitHub Pages قبل الطباعة، حتى تعمل الباركودات على جوالات الموظفين.</div>
+<div class="sheet">
+  <header class="doc">
+    <div>
+      <h1>Atellica® Solution – General Operator Training Workbook</h1>
+      <p dir="ltr" style="text-align:right">T18001.081 · Version 1.26 and above · Effective 06-Nov-2023 · Siemens Healthineers</p>
+      <p>📱 امسح الرمز بكاميرا الجوال لفتح الصفحة من الدليل الأصلي · Scan to open the page</p>
+    </div>
+  </header>
+  <div class="notice">مرجع تدريبي فقط. اتبع دائماً دليل المشغل الحالي من Siemens Healthineers وتعليمات الاستخدام (IFU) وإجراءات المختبر المعتمدة (SOPs). · Training reference only. Always follow the current Operator Manual, IFU and approved laboratory SOPs.</div>
+  <div id="list"></div>
+</div>
+<script src="assets/qrcode.js"></script>
+<script src="assets/catalog.js"></script>
+<script>
+  function defaultBase() {
+    const u = new URL('.', location.href);
+    return u.href + 'pdf/';
+  }
+  function qr(text) {
+    const q = qrcode(0, 'M');
+    q.addData(text);
+    q.make();
+    return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  }
+  function esc(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function render() {
+    let base = document.getElementById('base').value.trim();
+    if (base && !base.endsWith('/')) base += '/';
+    const out = [];
+    for (const m of CATALOG.modules) {
+      const items = CATALOG.items.filter((i) => i.module === m.module);
+      out.push(`<section class="module">
+        <div class="mhead"><div class="t"><b>${m.module} · ${esc(m.titleAr)}</b><span>Module ${m.module}: ${esc(m.title)} — full module (PDF p.${m.start}–${m.end})</span></div>
+        <div class="q">${qr(base + m.file)}</div></div>
+        <div class="grid">${items.map((i) => `<a class="card" href="${esc(base + i.file)}">
+          <div class="q">${qr(base + i.file)}</div>
+          <div class="ti">${esc(i.title)}</div>
+          <div class="pg">Page ${esc(i.label)}</div></a>`).join('')}</div></section>`);
+    }
+    document.getElementById('list').innerHTML = out.join('');
+  }
+  document.getElementById('base').value = defaultBase();
+  if (location.protocol === 'file:' || /localhost|127\.0\.0\.1/.test(location.hostname)) document.getElementById('warn').style.display = 'block';
+  render();
+</script>
+</body>
+</html>

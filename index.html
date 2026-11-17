@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Atellica – دليل التدريب</title>
+<style>
+  :root { --navy:#1b2c4a; --teal:#1f7776; --line:#e3e9f3; --muted:#5f6b80; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Tahoma,Arial,sans-serif; background:#f5f3ee; color:var(--navy); }
+  header { background:linear-gradient(135deg,#1b2c4a,#1f7776); color:#fff; padding:22px 18px 18px; }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:4px 0 0; font-size:13px; opacity:.85; }
+  .search { margin-top:14px; width:100%; padding:11px 14px; border-radius:12px; border:0; font-size:15px; }
+  .notice { margin:12px; padding:10px 12px; border-radius:10px; background:#fff8e6; border:1px solid #f0d58a; font-size:12.5px; color:#6b4f00; }
+  main { max-width:760px; margin:0 auto; padding:0 12px 40px; }
+  details { background:#fff; border-radius:14px; margin-top:10px; box-shadow:0 1px 3px rgba(20,33,58,.08); overflow:hidden; }
+  summary { padding:14px 16px; cursor:pointer; font-weight:700; list-style:none; display:flex; justify-content:space-between; gap:8px; }
+  summary small { font-weight:400; color:var(--muted); }
+  ul { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
+  li a { display:flex; justify-content:space-between; gap:10px; padding:12px 16px; color:var(--navy); text-decoration:none; border-bottom:1px solid var(--line); font-size:14px; }
+  li a:active, li a:hover { background:#effaf9; }
+  li a span:first-child { direction:ltr; text-align:left; flex:1; }
+  li a span:last-child { color:var(--muted); font-size:12px; white-space:nowrap; direction:ltr; }
+  li.full a { font-weight:700; color:var(--teal); }
+  footer { text-align:center; font-size:12px; color:var(--muted); padding:20px; }
+  footer a { color:var(--teal); }
+</style>
+</head>
+<body>
+<header>
+  <h1>دليل تدريب Atellica – General Operator</h1>
+  <p dir="ltr" style="text-align:right">T18001.081 · Version 1.26+ · Siemens Healthineers</p>
+  <input class="search" id="q" placeholder="ابحث عن عنوان… (QC, Calibration, Maintenance)" aria-label="بحث" dir="auto">
+</header>
+<div class="notice">مرجع تدريبي فقط. اتبع دائماً دليل المشغل الحالي من Siemens Healthineers وتعليمات الاستخدام (IFU) وإجراءات المختبر المعتمدة (SOPs) عند التشغيل الفعلي للجهاز.</div>
+<main id="list"></main>
+<footer><a href="qr.html">ورقة الباركودات للطباعة</a></footer>
+<script src="assets/catalog.js"></script>
+<script>
+  function esc(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function render(filter) {
+    const f = (filter || '').trim().toLowerCase();
+    const html = CATALOG.modules.map((m) => {
+      const items = CATALOG.items.filter((i) => i.module === m.module && (!f || i.title.toLowerCase().includes(f) || m.title.toLowerCase().includes(f) || m.titleAr.includes(f)));
+      if (f && !items.length) return '';
+      return `<details ${f ? 'open' : ''}><summary><span>${m.module} · ${esc(m.titleAr)}</span><small dir="ltr">${esc(m.title)}</small></summary><ul>
+        <li class="full"><a href="pdf/${m.file}"><span>Full module ${m.module}</span><span>p.${m.start}–${m.end}</span></a></li>
+        ${items.map((i) => `<li><a href="pdf/${i.file}"><span>${esc(i.title)}</span><span>Page ${esc(i.label)}</span></a></li>`).join('')}
+      </ul></details>`;
+    }).join('');
+    document.getElementById('list').innerHTML = html || '<p style="text-align:center;color:#5f6b80;padding:20px">لا توجد نتائج</p>';
+  }
+  document.getElementById('q').addEventListener('input', (e) => render(e.target.value));
+  render('');
+</script>
+</body>
+</html>
